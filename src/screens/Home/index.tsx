@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import { SearchBar } from '../../components/SearchBar';
 import { LoginDataItem } from '../../components/LoginDataItem';
-
+import {  useLogins } from "../../hooks/logins";
 import {
   Container,
   LoginList,
@@ -22,43 +22,30 @@ interface LoginDataProps {
 type LoginListDataProps = LoginDataProps[];
 
 export function Home() {
-  const [searchListData, setSearchListData] = useState<LoginListDataProps>([]);
-  const [data, setData] = useState<LoginListDataProps>([]);
-  const dataKey = '@passmanager:logins';
+   const [searchListData, setSearchListData] = useState<LoginListDataProps>([]);
+   const [data, setData] = useState<LoginListDataProps>([]);
+   const  { getLogins   } = useLogins();
 
   async function loadData() {
-    try {
-      const response = await AsyncStorage.getItem(dataKey);
-
-      if(!response) return;
-
-      const currentData = response ? JSON.parse(response) : [];
-    
-      setSearchListData(currentData);
-      setData(currentData);
-    } catch (error) {
-      console.log(error);
-    }
+       const data = await getLogins()
+      setSearchListData(data)
+      setData(data)
   }
 
-  useEffect(() => {
-    loadData();
-  }, []);
 
   useFocusEffect(useCallback(() => {
     loadData();
   }, []));
 
   function handleFilterLoginData(search: string) {
-    if(search){
-      const dataFilttered = data.filter(item => item.title.includes(search));
-
-      if(dataFilttered) {
-        setSearchListData(dataFilttered);
-      }
-    } else {
-      setSearchListData(data);
+    // Filter results inside data, save with setSearchListData
+    if ( !(search.trim()==="" ) && (!search !== undefined)){
+      const result = data.filter( (item: LoginDataProps ) =>
+        item.title=== search
+      )
+      setSearchListData( result);
     }
+
   }
 
   return (

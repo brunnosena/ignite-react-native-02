@@ -28,7 +28,10 @@ const schema = Yup.object().shape({
   password: Yup.string().required('Senha é obrigatória!'),
 })
 
+import {  useLogins } from "../../hooks/logins";
+
 export function RegisterLoginData() {
+  const  { setLogin   } = useLogins();
   const {
     control,
     handleSubmit,
@@ -36,34 +39,18 @@ export function RegisterLoginData() {
     formState: {
       errors
     }
-  } = useForm({
-    resolver: yupResolver(schema)
-  });
+  } = useForm(  {resolver: yupResolver(schema)})
+
+
 
   async function handleRegister(formData: FormData) {
+    console.log('FormData', formData)
     const newLoginData = {
       id: String(uuid.v4()),
       ...formData
     }
-
-    try {
-      const dataKey = '@passmanager:logins';
-      const data = await AsyncStorage.getItem(dataKey);
-      const currentData = data ? JSON.parse(data) : [];
-
-      const dataFormatted = [
-        ...currentData,
-        newLoginData
-      ];
-
-      await AsyncStorage.setItem(dataKey, JSON.stringify(dataFormatted));
-
-      reset();
-    } catch(error) {
-      console.log(error);
-      Alert.alert('Não foi possível salvar!');
-    }
-
+    await setLogin(newLoginData)
+    // Save data on AsyncStorage
   }
 
   return (
